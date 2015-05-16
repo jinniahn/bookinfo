@@ -1,26 +1,26 @@
 /*
 
-bookinfo
-========
+  bookinfo
+  ========
 
-get information of book from google.
+  get information of book from google.
 
-functions
-=========
+  functions
+  =========
 
-- get_info( cond, callback ) 
-   : callback(err, info)
-
-
-USAGE
-=====
-
-var bookinfo = require('bookinfo')
-bookinfo.get_info({"isbn": 9788998886011})
+  - get_info( cond, callback ) 
+  : callback(err, info)
 
 
+  USAGE
+  =====
 
-===
+  var bookinfo = require('bookinfo')
+  bookinfo.get_info({"isbn": 9788998886011})
+
+
+
+  ===
 
 */
 
@@ -38,14 +38,14 @@ var iconv = new Iconv('EUC-KR', 'UTF-8//TRANSLIT//IGNORE');
 // @param isbn[String] isbn string of book
 // @param callback[function(err, link)] call after processing
 var get_book_url = function(isbn, callback){
-    var url = 'https://www.google.co.kr/search?tbo=p&tbm=bks&q=isbn:'+isbn
+    var url = 'https://www.google.com/search?tbo=p&tbm=bks&q=isbn:'+isbn
     request(url, function(error, response, html){
-	if (error) {
-	    if(callback){callback(error);}
-	    return;
-	};
-	var $ = cheerio.load(html);
-	callback(null, $('div#search a').attr('href'))
+		if (error) {
+			if(callback){callback(error);}
+			return;
+		};
+		var $ = cheerio.load(html);
+		callback(null, $('div#search a').attr('href'))
     });
 }
 
@@ -75,51 +75,51 @@ var get_info_from_google = function(link, callback) {
     // get info
     request({uri: link, encoding: 'binary'}, function(err, resp, body) {
 
-	// fix hangul(korean language) encoding problem
-	var strContents = new Buffer(body, 'binary')
-	var html = iconv.convert(strContents).toString('utf8');
-	
-	if (err) {
-	    if(callback) { callback(err); }
-	    return;
-	}
+		// fix hangul(korean language) encoding problem
+		var strContents = new Buffer(body, 'binary')
+		var html = iconv.convert(strContents).toString('utf8');
+		
+		if (err) {
+			if(callback) { callback(err); }
+			return;
+		}
 
-	// load html to parse
-	var $ = cheerio.load(html);
+		// load html to parse
+		var $ = cheerio.load(html);
 
-	// result of processing
-	var info = {}
+		// result of processing
+		var info = {}
 
-	// parsing
-	$('#metadata_content_table tr').each(function(index, item){
-	    var title = $(this).find('td').eq(0).text().trim().toLowerCase()
-	    var value = $(this).find('td').eq(1).text().trim()
-	    // remap title
-	    if (title == 'translated by') { title = 'translator'; }
-	    if (title == 'length') { title = 'pages'; }
+		// parsing
+		$('#metadata_content_table tr').each(function(index, item){
+			var title = $(this).find('td').eq(0).text().trim().toLowerCase()
+			var value = $(this).find('td').eq(1).text().trim()
+			// remap title
+			if (title == 'translated by') { title = 'translator'; }
+			if (title == 'length') { title = 'pages'; }
 
-	    // skip
-	    if (title == 'export citation') return;
+			// skip
+			if (title == 'export citation') return;
 
-	    // convert data according to specific data
-	    if (title == 'translator' || title == 'contributors' || title == 'isbn') {
-		value = value.split(',')
-		value = value.map(function(item){
-		    return item.trim();
+			// convert data according to specific data
+			if (title == 'translator' || title == 'contributors' || title == 'isbn') {
+				value = value.split(',')
+				value = value.map(function(item){
+					return item.trim();
+				});
+			}
+			if (title == 'pages') {
+				value = value.replace('pages', '').trim()
+			}
+
+
+			
+			if (title.length != 0) {
+				info[title] = value;
+			}
 		});
-	    }
-	    if (title == 'pages') {
-		value = value.replace('pages', '').trim()
-	    }
 
-
-	    
-	    if (title.length != 0) {
-		info[title] = value;
-	    }
-	});
-
-	if(callback) { callback(null, info); }	
+		if(callback) { callback(null, info); }	
 
     })
 
@@ -129,12 +129,12 @@ var get_info_from_google = function(link, callback) {
 var get_info_from_isbn = function( isbn, callback ) {
     get_book_url( isbn, function(err, url) {
 
-	// check error 
-	if (err) { callback(err); return; }
+		// check error 
+		if (err) { callback(err); return; }
 
-	get_info_from_google( url, function( err, info ) {
-	    callback(null, info);
-	});
+		get_info_from_google( url, function( err, info ) {
+			callback(null, info);
+		});
     });
 };
 
@@ -147,9 +147,9 @@ var get_info_from_isbn = function( isbn, callback ) {
 // isbn string
 var get_info = function( query, callback ) {
     if( query['isbn'] ) {
-	get_info_from_isbn(query['isbn'], callback);
+		get_info_from_isbn(query['isbn'], callback);
     } else {
-	if(callback) { callback("not supported"); }
+		if(callback) { callback("not supported"); }
     }
 };
 
